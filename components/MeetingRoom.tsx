@@ -101,22 +101,22 @@ const MeetingRoom = () => {
     if (callingState !== CallingState.JOINED || !localParticipant) return;
 
     const interval = setInterval(() => {
-      // Log local audio sender bitrate every 5s
-      const audioSender = call?.getAudioSender();
-      if (audioSender) {
-        audioSender.getStats().then(stats => {
-          stats.forEach(report => {
-            if (report.type === 'outbound-rtp' && report.mediaType === 'audio') {
-              console.log('🎤 Audio sender stats:', {
-                bitrate: report.bytesSent,
-                packetsSent: report.packetsSent,
-                timestamp: new Date().toISOString()
-              });
-            }
+      // Log audio track status and MediaBus state
+      try {
+        const audioTrack = call?.microphone.getTrack?.();
+        if (audioTrack) {
+          console.log('🎤 Audio diagnostics:', {
+            trackState: audioTrack.readyState,
+            trackId: audioTrack.id,
+            enabled: audioTrack.enabled,
+            muted: audioTrack.muted,
+            timestamp: new Date().toISOString()
           });
-        }).catch(err => {
-          console.warn('Failed to get audio stats:', err);
-        });
+        } else {
+          console.log('🎤 Audio diagnostics: No audio track available');
+        }
+      } catch (error) {
+        console.warn('Failed to get audio diagnostics:', error);
       }
     }, 5000);
 

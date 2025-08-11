@@ -25,12 +25,22 @@ export const MediaBusProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (t && t.readyState !== "ended") {
       setTrack(t);
       trackRef.current = t;
+      console.log('🎤 MediaBus: Track acquired', {
+        trackId: t.id,
+        state: t.readyState,
+        enabled: t.enabled
+      });
     }
 
     // Keep track if SDK replaces/refreshes mic internally
     const onMicrophoneStateChanged = () => {
       const nt = call.microphone.getTrack?.() as MediaStreamTrack | undefined;
       if (nt && nt !== trackRef.current && nt.readyState !== "ended") {
+        console.log('🎤 MediaBus: Track refreshed', {
+          oldTrackId: trackRef.current?.id,
+          newTrackId: nt.id,
+          state: nt.readyState
+        });
         trackRef.current = nt;
         setTrack(nt);
       }

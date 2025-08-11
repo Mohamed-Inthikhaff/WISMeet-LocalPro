@@ -44,12 +44,21 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
       const clone = t.clone();
       const s = new MediaStream([clone]);
       setInputStream(s);
+      console.log('🎤 Transcription: Cloned track created', {
+        originalTrackId: t.id,
+        clonedTrackId: clone.id,
+        streamId: s.id
+      });
       return () => {
         // only stop the clone
         clone.stop();
+        console.log('🎤 Transcription: Cloned track stopped', {
+          clonedTrackId: clone.id
+        });
       };
     } else {
       setInputStream(null);
+      console.log('🎤 Transcription: No audio track available for cloning');
     }
   }, [getAudioTrack]);
 
