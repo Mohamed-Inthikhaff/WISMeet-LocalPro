@@ -384,10 +384,7 @@ const MeetingRoom = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             className="relative flex flex-1 items-center justify-center p-4"
-            style={{ 
-              willChange: 'auto', // Prevent unnecessary GPU acceleration
-              transform: 'translateZ(0)' // Force hardware acceleration
-            }}
+            style={{ willChange: 'auto' }}
           >
             <div className="relative h-full w-full max-w-[1440px]">
               <CallLayout />
@@ -402,7 +399,7 @@ const MeetingRoom = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed right-0 top-0 bottom-0 z-50 w-full border-l border-gray-800 bg-gray-900/95 backdrop-blur-xl md:relative md:w-80"
+              className="fixed right-0 top-0 bottom-0 z-50 w-full border-l border-gray-800 bg-gray-900/95 md:relative md:w-80 md:backdrop-blur-xl"
             >
               <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between border-b border-gray-800 p-4">
@@ -430,7 +427,7 @@ const MeetingRoom = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onClick={() => setShowParticipants(true)}
-              className="fixed right-4 top-1/2 z-40 -translate-y-1/2 rounded-l-xl bg-gray-800/90 p-2 text-white backdrop-blur-sm hover:bg-gray-700 md:hidden"
+              className="fixed right-4 top-1/2 z-40 -translate-y-1/2 rounded-l-xl bg-gray-800/90 p-2 text-white hover:bg-gray-700 md:hidden"
             >
               <ChevronLeft className="h-6 w-6" />
             </motion.button>
@@ -450,7 +447,7 @@ const MeetingRoom = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative flex flex-wrap items-center justify-center gap-2 bg-gray-900/90 p-4 backdrop-blur-sm md:gap-4"
+        className="relative flex flex-wrap items-center justify-center gap-2 bg-gray-900/90 p-4 md:gap-4"
       >
         <CallControls 
           onLeave={() => router.push('/')}

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Stabilize compositor for live video inside tiles (safe, feature-neutral) */
+.video-tile video {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
 * {
   margin: 0;
   padding: 0;
