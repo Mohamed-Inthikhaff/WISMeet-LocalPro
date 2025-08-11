@@ -17,7 +17,7 @@ import { useUser } from '@clerk/nextjs';
 import { createSocket } from '@/lib/socket-client';
 import { MediaBusProvider } from './MediaBusProvider';
 import { USE_CUSTOM_GRID } from '@/constants/featureFlags';
-import ParticipantsGrid from './ParticipantsGrid';
+import ProParticipantsGrid from './ProParticipantsGrid';
 
 import {
   DropdownMenu,
@@ -317,7 +317,7 @@ const MeetingRoom = () => {
   const CallLayout = () => {
     // If screen sharing is active, use picture-in-picture layout
     if (isScreenSharing) {
-      return USE_CUSTOM_GRID ? <ParticipantsGrid /> : (
+      return USE_CUSTOM_GRID ? <ProParticipantsGrid /> : (
         <div className="h-full w-full relative">
           {/* Main screen share area - takes full space */}
           <div className="h-full w-full">
@@ -337,7 +337,7 @@ const MeetingRoom = () => {
     }
 
     // Use custom grid if enabled, otherwise use existing layouts
-    if (USE_CUSTOM_GRID) return <ParticipantsGrid />;
+    if (USE_CUSTOM_GRID) return <ProParticipantsGrid />;
     
     // Normal layout when not screen sharing
     switch (layout) {
