@@ -12,7 +12,7 @@ interface MeetingTranscriptionProps {
 }
 
 const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: MeetingTranscriptionProps) => {
-  const { getAudioTrack } = useMediaBus();
+  const { getAudioTrack, version } = useMediaBus();
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputStream, setInputStream] = useState<MediaStream | null>(null);
@@ -37,7 +37,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
     onTranscriptUpdateRef.current = onTranscriptUpdate;
   }, [onTranscriptUpdate]);
 
-  // Build a cloned stream for transcription consumers.
+  // Build a cloned stream for transcription consumers whenever the authoritative track changes.
   useEffect(() => {
     const t = getAudioTrack();
     if (t && t.readyState !== "ended") {
@@ -60,7 +60,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
       setInputStream(null);
       console.log('🎤 Transcription: No audio track available for cloning');
     }
-  }, [getAudioTrack]);
+  }, [getAudioTrack, version]); // <- key change
 
   // Initialize transcription service only when meetingId changes
   useEffect(() => {
@@ -70,7 +70,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
     transcriptionServiceRef.current?.stopTranscription().catch(() => {});
     transcriptionServiceRef.current = createTranscriptionService({
       meetingId,
-      inputStream, // <-- NEW: let service use cloned stream
+      inputStream: inputStream || undefined, // Convert null to undefined for compatibility
       onTranscriptUpdate: (newTranscript) => {
         transcriptContext.setTranscript(meetingId, newTranscript);
         onTranscriptUpdateRef.current?.(newTranscript);
