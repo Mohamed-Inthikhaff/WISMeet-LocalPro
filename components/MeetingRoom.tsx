@@ -103,7 +103,9 @@ const MeetingRoom = () => {
     const interval = setInterval(() => {
       // Log audio track status and MediaBus state
       try {
-        const audioTrack = call?.microphone.getTrack?.();
+        const anyCall = call as any;
+        const audioTrack = anyCall?.microphone?.state?.track || 
+                          anyCall?.state?.mediaStream?.getAudioTracks?.()[0];
         if (audioTrack) {
           console.log('🎤 Audio diagnostics:', {
             trackState: audioTrack.readyState,
