@@ -298,4 +298,91 @@ export const getAudioDevices = async (): Promise<MediaDeviceInfo[]> => {
     console.error('Error getting audio devices:', error);
     return [];
   }
+};
+
+/**
+ * Initialize audio monitor from cloned microphone track
+ * This function creates a cloned stream from the MediaBus track for monitoring
+ */
+export const initFromClonedMic = (getAudioTrack: () => MediaStreamTrack | null): {
+  startMonitoring: () => void;
+  stopMonitoring: () => void;
+  getAudioLevel: () => number;
+} => {
+  let audioContext: AudioContext | null = null;
+  let analyser: AnalyserNode | null = null;
+  let source: MediaStreamAudioSourceNode | null = null;
+  let clonedStream: MediaStream | null = null;
+  let isMonitoring = false;
+
+  const startMonitoring = () => {
+    if (isMonitoring) return;
+
+    const track = getAudioTrack();
+    if (!track || track.readyState === 'ended') return;
+
+    try {
+      // Create cloned stream
+      const clonedTrack = track.clone();
+      clonedStream = new MediaStream([clonedTrack]);
+
+      // Set up audio analysis
+      audioContext = new AudioContext();
+      source = audioContext.createMediaStreamSource(clonedStream);
+      analyser = audioContext.createAnalyser();
+      source.connect(analyser);
+
+      isMonitoring = true;
+      console.log('🎤 Audio monitoring started with cloned track');
+    } catch (error) {
+      console.error('Error starting audio monitoring with cloned track:', error);
+    }
+  };
+
+  const stopMonitoring = () => {
+    if (!isMonitoring) return;
+
+    try {
+      if (source) {
+        source.disconnect();
+        source = null;
+      }
+      if (analyser) {
+        analyser = null;
+      }
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+      if (clonedStream) {
+        clonedStream.getTracks().forEach(track => track.stop());
+        clonedStream = null;
+      }
+
+      isMonitoring = false;
+      console.log('🎤 Audio monitoring stopped');
+    } catch (error) {
+      console.error('Error stopping audio monitoring:', error);
+    }
+  };
+
+  const getAudioLevel = (): number => {
+    if (!isMonitoring || !analyser) return 0;
+
+    try {
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+      return average;
+    } catch (error) {
+      console.error('Error getting audio level:', error);
+      return 0;
+    }
+  };
+
+  return {
+    startMonitoring,
+    stopMonitoring,
+    getAudioLevel
+  };
 }; 

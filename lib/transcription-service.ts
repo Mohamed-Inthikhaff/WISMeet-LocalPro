@@ -47,6 +47,7 @@ interface SpeechRecognitionAlternative {
 
 export interface TranscriptionConfig {
   meetingId: string;
+  inputStream?: MediaStream; // Optional input stream from MediaBus
   onTranscriptUpdate?: (transcript: string) => void;
   onError?: (error: string) => void;
 }
@@ -69,9 +70,11 @@ export class TranscriptionService {
   private onTranscriptUpdate?: (transcript: string) => void;
   private onError?: (error: string) => void;
   private startTime = 0;
+  private inputStream?: MediaStream; // Store the input stream
 
-  constructor({ meetingId, onTranscriptUpdate, onError }: TranscriptionConfig) {
+  constructor({ meetingId, inputStream, onTranscriptUpdate, onError }: TranscriptionConfig) {
     this.meetingId = meetingId;
+    this.inputStream = inputStream;
     this.onTranscriptUpdate = onTranscriptUpdate;
     this.onError = onError;
   }
@@ -87,6 +90,11 @@ export class TranscriptionService {
     rec.interimResults = true;
     rec.lang = 'en-US';
     rec.maxAlternatives = 1;
+
+    // If we have an input stream from MediaBus, use it
+    // Note: Web Speech API doesn't directly accept MediaStream, but we can
+    // use it for audio analysis if needed. For now, we'll rely on the system mic
+    // since the Stream SDK is already capturing audio for the call.
 
     rec.onresult = (evt: SpeechRecognitionEvent) => {
       this.backoffMs = 500; // reset backoff on success

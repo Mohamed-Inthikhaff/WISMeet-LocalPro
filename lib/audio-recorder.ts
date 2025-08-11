@@ -257,4 +257,92 @@ export class AudioRecorder {
  */
 export const createAudioRecorder = (config: AudioRecorderConfig): AudioRecorder => {
   return new AudioRecorder(config);
+};
+
+/**
+ * Initialize audio recorder from cloned microphone track
+ * This function creates a cloned stream from the MediaBus track for recording
+ */
+export const initRecorderFromClonedMic = (getAudioTrack: () => MediaStreamTrack | null): {
+  startRecording: () => Promise<boolean>;
+  stopRecording: () => Promise<string>;
+  isRecording: () => boolean;
+} => {
+  let mediaRecorder: MediaRecorder | null = null;
+  let audioChunks: Blob[] = [];
+  let clonedStream: MediaStream | null = null;
+  let isRecording = false;
+  let startTime = 0;
+
+  const startRecording = async (): Promise<boolean> => {
+    if (isRecording) return false;
+
+    const track = getAudioTrack();
+    if (!track || track.readyState === 'ended') return false;
+
+    try {
+      // Create cloned stream
+      const clonedTrack = track.clone();
+      clonedStream = new MediaStream([clonedTrack]);
+
+      // Create MediaRecorder
+      mediaRecorder = new MediaRecorder(clonedStream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+
+      audioChunks = [];
+      startTime = Date.now();
+      isRecording = true;
+
+      // Handle audio data
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      // Start recording in chunks (every 10 seconds)
+      mediaRecorder.start(10000);
+
+      console.log('🎤 Audio recording started with cloned track');
+      return true;
+    } catch (error) {
+      console.error('Error starting audio recording with cloned track:', error);
+      return false;
+    }
+  };
+
+  const stopRecording = async (): Promise<string> => {
+    if (!isRecording || !mediaRecorder) return '';
+
+    try {
+      isRecording = false;
+      mediaRecorder.stop();
+
+      // Stop the cloned stream
+      if (clonedStream) {
+        clonedStream.getTracks().forEach(track => track.stop());
+        clonedStream = null;
+      }
+
+      // Wait for final processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('🎤 Audio recording stopped with cloned track');
+      return 'Recording completed'; // Return a placeholder - actual processing would be done here
+    } catch (error) {
+      console.error('Error stopping audio recording:', error);
+      return '';
+    }
+  };
+
+  const isRecordingStatus = (): boolean => {
+    return isRecording;
+  };
+
+  return {
+    startRecording,
+    stopRecording,
+    isRecording: isRecordingStatus
+  };
 }; 

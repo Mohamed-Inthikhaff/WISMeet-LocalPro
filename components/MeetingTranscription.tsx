@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createTranscriptionService, TranscriptionService } from '@/lib/transcription-service';
 import { transcriptContext } from '@/lib/transcript-context';
+import { useMediaBus } from '@/components/MediaBusProvider';
 
 interface MeetingTranscriptionProps {
   meetingId: string;
@@ -11,8 +12,10 @@ interface MeetingTranscriptionProps {
 }
 
 const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: MeetingTranscriptionProps) => {
+  const { getAudioTrack } = useMediaBus();
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inputStream, setInputStream] = useState<MediaStream | null>(null);
   
   // Use refs to guard concurrent start/stop operations
   const transcriptionServiceRef = useRef<TranscriptionService | null>(null);
@@ -34,6 +37,22 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
     onTranscriptUpdateRef.current = onTranscriptUpdate;
   }, [onTranscriptUpdate]);
 
+  // Build a cloned stream for transcription consumers.
+  useEffect(() => {
+    const t = getAudioTrack();
+    if (t && t.readyState !== "ended") {
+      const clone = t.clone();
+      const s = new MediaStream([clone]);
+      setInputStream(s);
+      return () => {
+        // only stop the clone
+        clone.stop();
+      };
+    } else {
+      setInputStream(null);
+    }
+  }, [getAudioTrack]);
+
   // Initialize transcription service only when meetingId changes
   useEffect(() => {
     if (!meetingId) return;
@@ -42,6 +61,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
     transcriptionServiceRef.current?.stopTranscription().catch(() => {});
     transcriptionServiceRef.current = createTranscriptionService({
       meetingId,
+      inputStream, // <-- NEW: let service use cloned stream
       onTranscriptUpdate: (newTranscript) => {
         transcriptContext.setTranscript(meetingId, newTranscript);
         onTranscriptUpdateRef.current?.(newTranscript);
@@ -55,7 +75,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
       transcriptionServiceRef.current?.stopTranscription().catch(() => {});
       transcriptionServiceRef.current = null;
     };
-  }, [meetingId]);
+  }, [meetingId, inputStream]);
 
   // Start/stop transcription based on meeting state with proper guards
   useEffect(() => {

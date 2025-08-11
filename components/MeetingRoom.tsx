@@ -15,6 +15,9 @@ import { Users, LayoutList, X, ChevronLeft, Video, VideoOff, Mic, MicOff, Messag
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import { createSocket } from '@/lib/socket-client';
+import { MediaBusProvider } from './MediaBusProvider';
+import { USE_CUSTOM_GRID } from '@/constants/featureFlags';
+import ParticipantsGrid from './ParticipantsGrid';
 
 import {
   DropdownMenu,
@@ -92,6 +95,33 @@ const MeetingRoom = () => {
       isLocalParticipantIncluded: participants.some(p => p.userId === localParticipant?.userId)
     });
   }, [participantCount, participants, localParticipant]);
+
+  // Lightweight audio diagnostics (temporary - remove after verification)
+  useEffect(() => {
+    if (callingState !== CallingState.JOINED || !localParticipant) return;
+
+    const interval = setInterval(() => {
+      // Log local audio sender bitrate every 5s
+      const audioSender = call?.getAudioSender();
+      if (audioSender) {
+        audioSender.getStats().then(stats => {
+          stats.forEach(report => {
+            if (report.type === 'outbound-rtp' && report.mediaType === 'audio') {
+              console.log('🎤 Audio sender stats:', {
+                bitrate: report.bytesSent,
+                packetsSent: report.packetsSent,
+                timestamp: new Date().toISOString()
+              });
+            }
+          });
+        }).catch(err => {
+          console.warn('Failed to get audio stats:', err);
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [callingState, localParticipant, call]);
 
   // Gate socket by readiness - only connect when call is joined and meetingId exists
   useEffect(() => {
@@ -285,7 +315,7 @@ const MeetingRoom = () => {
   const CallLayout = () => {
     // If screen sharing is active, use picture-in-picture layout
     if (isScreenSharing) {
-      return (
+      return USE_CUSTOM_GRID ? <ParticipantsGrid /> : (
         <div className="h-full w-full relative">
           {/* Main screen share area - takes full space */}
           <div className="h-full w-full">
@@ -304,6 +334,9 @@ const MeetingRoom = () => {
       );
     }
 
+    // Use custom grid if enabled, otherwise use existing layouts
+    if (USE_CUSTOM_GRID) return <ParticipantsGrid />;
+    
     // Normal layout when not screen sharing
     switch (layout) {
       case 'grid':
@@ -331,34 +364,35 @@ const MeetingRoom = () => {
   };
 
   return (
-    <div className="relative flex h-screen flex-col bg-gradient-to-br from-gray-900 to-gray-800">
+    <MediaBusProvider>
+      <div className="relative flex h-screen flex-col bg-gradient-to-br from-gray-900 to-gray-800">
 
-      
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 right-0 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
-        <div className="absolute -bottom-1/2 left-0 h-[500px] w-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
-      </div>
+        
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 right-0 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+          <div className="absolute -bottom-1/2 left-0 h-[500px] w-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
+        </div>
 
 
 
-      {/* Main Content */}
-      <div className="relative flex flex-1 overflow-hidden">
-        {/* Video Layout */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative flex flex-1 items-center justify-center p-4"
-          style={{ 
-            willChange: 'auto', // Prevent unnecessary GPU acceleration
-            transform: 'translateZ(0)' // Force hardware acceleration
-          }}
-        >
-          <div className="relative h-full w-full max-w-[1440px]">
-            <CallLayout />
-          </div>
-        </motion.div>
+        {/* Main Content */}
+        <div className="relative flex flex-1 overflow-hidden">
+          {/* Video Layout */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative flex flex-1 items-center justify-center p-4"
+            style={{ 
+              willChange: 'auto', // Prevent unnecessary GPU acceleration
+              transform: 'translateZ(0)' // Force hardware acceleration
+            }}
+          >
+            <div className="relative h-full w-full max-w-[1440px]">
+              <CallLayout />
+            </div>
+          </motion.div>
 
         {/* Participants List */}
         <AnimatePresence>
@@ -481,7 +515,8 @@ const MeetingRoom = () => {
         onTranscriptUpdate={setMeetingTranscript}
       />
 
-    </div>
+      </div>
+    </MediaBusProvider>
   );
 };
 
