@@ -388,7 +388,7 @@ const MeetingRoom = () => {
             className="relative flex flex-1 items-center justify-center p-4"
             style={{ willChange: 'auto' }}
           >
-            <div className="relative h-full w-full max-w-[1440px]">
+            <div className="relative h-full w-full max-w-[1080px]">
               <CallLayout />
             </div>
           </motion.div>
@@ -449,7 +449,7 @@ const MeetingRoom = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative flex flex-wrap items-center justify-center gap-2 bg-gray-900/90 p-4 md:gap-4"
+        className="meeting-controls relative flex items-center justify-center gap-2 bg-gray-900/90 p-4 md:gap-4"
       >
         <CallControls 
           onLeave={() => router.push('/')}
