@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useCallback } from "react";
 import { useCallStateHooks, ParticipantView, useCall } from "@stream-io/video-react-sdk";
-import { Pin, PinOff, Mic, MicOff } from "lucide-react";
+import { Pin, PinOff } from "lucide-react";
 import { motion } from "framer-motion";
 
 type P = any;
@@ -11,7 +11,6 @@ function Tile({
 }: { p: P; isLocal: boolean; pinned: boolean; onPinToggle: () => void }) {
   const tracks: string[] = (p as any)?.publishedTracks ?? [];
   const hasVideo = tracks.includes("camera" as any) || tracks.includes("video" as any);
-  const hasAudio = tracks.includes("microphone" as any) || tracks.includes("audio" as any);
   const audioLevel: number = (p as any)?.audioLevel ?? 0;
   const isSpeaking = audioLevel > 0.02;
 
@@ -22,11 +21,14 @@ function Tile({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.18 }}
       className={[
-        "pro-video-tile relative aspect-video rounded-2xl bg-black overflow-hidden isolate",
+        "pro-video-tile",               // identifier for our CSS
+        hasVideo ? "cam-on" : "",       // flag: camera is publishing
+        "relative aspect-video rounded-2xl bg-black overflow-hidden isolate",
         "shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] ring-1 ring-white/5",
         isSpeaking ? "outline outline-2 outline-blue-500/60" : "outline outline-1 outline-white/10",
       ].join(" ")}
-      style={{ contain: "paint" }}
+      // remove paint containment to avoid sub-pixel artifacts on ultra-wide viewports
+      // style={{ contain: "paint" }}
     >
       {/* Live video; mirror local for selfie view */}
       <div className={["absolute inset-0", isLocal && hasVideo ? "mirror" : ""].join(" ")}>
@@ -61,11 +63,8 @@ function Tile({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="rounded-full bg-black/40 p-1 text-white">
-            {hasAudio ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4 opacity-70" />}
-          </div>
-        </div>
+        {/* rely on Stream's built-in mic badge; no duplicate icon here */}
+        <div className="flex items-center gap-2" />
       </div>
     </motion.div>
   );
