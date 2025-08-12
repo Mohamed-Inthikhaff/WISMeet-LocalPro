@@ -187,3 +187,80 @@
 .react-datepicker__today-button {
   @apply bg-gray-800 border-t border-gray-700 text-gray-300 hover:bg-gray-700 transition-colors !important;
 }
+
+/* --- Ensure the real video sits above any placeholder --- */
+.pro-video-tile .str-video__participant-view,
+.pro-video-tile .str-video__participant-media,
+.pro-video-tile .str-video__video-container,
+.pro-video-tile .str-video__video,
+.pro-video-tile video {
+  z-index: 1 !important;           /* on top of the placeholder */
+}
+
+/* Hide Stream's black placeholder when a <video> exists (modern browsers) */
+.pro-video-tile:has(video) .str-video__video-placeholder,
+.str-video__participant-view:has(video) .str-video__video-placeholder {
+  display: none !important;
+}
+
+/* Fallback: even if it remains in the DOM, make it transparent and behind */
+.pro-video-tile .str-video__video-placeholder,
+.str-video__participant-view .str-video__video-placeholder {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  z-index: 0 !important;           /* keep it behind the video */
+}
+
+/* --- STREAM PLACEHOLDER + WIDE VIEWPORT SUB-PIXEL FIX --- */
+
+/* Make sure the real video/wrappers cover and sit above any placeholder */
+.pro-video-tile .str-video__participant-view,
+.pro-video-tile .str-video__participant-media,
+.pro-video-tile .str-video__video-container,
+.pro-video-tile .str-video__video,
+.pro-video-tile video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  background: transparent !important;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  z-index: 1 !important;
+}
+
+/* Hide Stream's black placeholder only while the camera is on */
+.pro-video-tile.cam-on .str-video__video-placeholder {
+  display: none !important;
+}
+
+/* If the placeholder still exists in the DOM, make it harmless */
+.pro-video-tile .str-video__video-placeholder {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  z-index: 0 !important;
+}
+
+/* Ultra-wide bleed: avoid 1–2px gaps from fractional rounding on big monitors */
+@media (min-width: 1440px) {
+  .pro-video-tile .str-video__participant-view,
+  .pro-video-tile .str-video__participant-media,
+  .pro-video-tile .str-video__video-container,
+  .pro-video-tile .str-video__video,
+  .pro-video-tile video {
+    inset: -0.75px !important; /* subtle overfill; visually invisible */
+  }
+}
+
+/* De-duplicate labels: keep your custom name chip; hide Stream label/menu in our tiles only */
+.pro-video-tile .str-video__participant-details,
+.pro-video-tile .str-video__menu-container {
+  display: none !important;
+}
