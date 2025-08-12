@@ -264,3 +264,35 @@
 .pro-video-tile .str-video__menu-container {
   display: none !important;
 }
+
+/* Kill any Stream dominant-speaker visual changes inside our custom tiles */
+.pro-video-tile .str-video__participant-view--dominant-speaker,
+.pro-video-tile [class*="dominant-speaker"] {
+  filter: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Remove Stream's speaking indicator bars in our tiles */
+.pro-video-tile .str-video__speech-indicator,
+.pro-video-tile .str-video__speech-indicator--dominant {
+  display: none !important;
+}
+
+/* Ensure no transitions/animations can flash the video or wrapper */
+.pro-video-tile video,
+.pro-video-tile .str-video__participant-view,
+.pro-video-tile .str-video__participant-media,
+.pro-video-tile .str-video__video-container,
+.pro-video-tile .str-video__video {
+  transition: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* Also neutralize pseudo-element highlights if SDK uses them */
+.pro-video-tile .str-video__participant-view--dominant-speaker::before,
+.pro-video-tile .str-video__participant-view--dominant-speaker::after {
+  content: none !important;
+}
