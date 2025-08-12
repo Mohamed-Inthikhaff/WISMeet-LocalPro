@@ -1,9 +1,14 @@
-import io from 'socket.io-client';
+import io from "socket.io-client";
 
 export function createSocket() {
-  const base = (process.env.NEXT_PUBLIC_BASE_URL || '').trim();
+  // If running in the browser, use the current site's origin
+  const base =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_BASE_URL || "").trim();
+
   const opts = {
-    transports: ['polling', 'websocket'],
+    transports: ["websocket"], // prefer websocket first
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 500,
@@ -12,5 +17,6 @@ export function createSocket() {
     withCredentials: true,
     autoConnect: false,
   };
-  return base ? io(base, opts) : io(opts);
+
+  return io(base, opts);
 }
