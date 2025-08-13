@@ -12,7 +12,7 @@ interface MeetingTranscriptionProps {
 }
 
 const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: MeetingTranscriptionProps) => {
-  const { audioTrack, version } = useMediaBus();
+  const { getAudioTrack, version } = useMediaBus();
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputStream, setInputStream] = useState<MediaStream | null>(null);
@@ -39,7 +39,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
 
   // Build a cloned stream for transcription consumers whenever the authoritative track changes.
   useEffect(() => {
-    const t = audioTrack;
+    const t = getAudioTrack();
     if (t && t.readyState !== "ended") {
       const clone = t.clone();
       const s = new MediaStream([clone]);
@@ -60,7 +60,7 @@ const MeetingTranscription = ({ meetingId, isActive, onTranscriptUpdate }: Meeti
       setInputStream(null);
       console.log('🎤 Transcription: No audio track available for cloning');
     }
-  }, [audioTrack, version]); // <- key change
+  }, [getAudioTrack, version]); // <- key change
 
   // Initialize transcription service only when meetingId changes
   useEffect(() => {

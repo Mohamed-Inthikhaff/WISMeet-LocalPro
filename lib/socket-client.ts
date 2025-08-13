@@ -29,11 +29,11 @@ export function createSocket() {
     console.log('✅ Socket connected successfully:', socket.id);
   });
   
-  socket.on('connect_error', (error) => {
+  socket.on('connect_error', (error: any) => {
     console.error('❌ Socket connection error:', error);
   });
   
-  socket.on('disconnect', (reason) => {
+  socket.on('disconnect', (reason: any) => {
     console.log('🔌 Socket disconnected:', reason);
   });
 
