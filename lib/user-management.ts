@@ -135,8 +135,8 @@ export const getUserEmail = async (userId: string): Promise<string | null> => {
     
     // Fallback to hardcoded mapping for existing users
     const fallbackMapping: Record<string, string> = {
-      'user_30UvuQl3AxXMrVmTMuwXryqb9sO': 'mhdinthikaff@gmail.com',
-      'user_30UzCEBdvTqa7ehrzBmoft0cLku': 'mohamed.inthikhaff@wismorgages.co.uk'
+      'user_30UvuQl3AxXMrVmTMuwXryqb9sO': 'mohamed.inthikhaff@wismortgages.co.uk',
+      'user_30UzCEBdvTqa7ehrzBmoft0cLku': 'mhdinthikaff@gmail.com'
     };
     
     const fallbackEmail = fallbackMapping[userId];
@@ -167,7 +167,7 @@ export const getUserName = async (userId: string): Promise<string | null> => {
     // Fallback to hardcoded mapping for existing users
     const fallbackMapping: Record<string, string> = {
       'user_30UvuQl3AxXMrVmTMuwXryqb9sO': 'Mohamed Inthikhaff | WIS Mortgages',
-      'user_30UzCEBdvTqa7ehrzBmoft0cLku': 'Mohamed Inthikaff'
+      'user_30UzCEBdvTqa7ehrzBmoft0cLku': 'Mohamed Inthikhaff'
     };
     
     const fallbackName = fallbackMapping[userId];

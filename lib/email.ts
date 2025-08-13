@@ -277,10 +277,22 @@ export const sendMortgageSummaryEmail = async (summaryData: {
   advisorEmail: string;
 }) => {
   try {
+    console.log('📧 Attempting to send mortgage summary email...');
+    console.log('📧 Email configuration:', {
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: process.env.EMAIL_PORT || '587',
+      user: process.env.EMAIL_USER ? '***configured***' : '❌ NOT CONFIGURED',
+      pass: process.env.EMAIL_PASS ? '***configured***' : '❌ NOT CONFIGURED',
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '❌ NOT CONFIGURED'
+    });
+    console.log('📧 Recipients:', [summaryData.clientEmail, summaryData.advisorEmail]);
+    
     const transporter = createTransporter();
     const emailContent = createMortgageSummaryEmail(summaryData);
     
+    console.log('📧 Sending email...');
     const result = await transporter.sendMail(emailContent);
+    console.log('✅ Email sent successfully:', result.messageId);
     
     return {
       success: true,
@@ -288,7 +300,11 @@ export const sendMortgageSummaryEmail = async (summaryData: {
       recipients: [summaryData.clientEmail, summaryData.advisorEmail]
     };
   } catch (error) {
-    console.error('Error sending mortgage summary email:', error);
+    console.error('❌ Error sending mortgage summary email:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -354,11 +370,25 @@ export const sendSummaryEmail = async (
 // Verify email configuration
 export const verifyEmailConfig = async () => {
   try {
+    console.log('🔍 Verifying email configuration...');
+    console.log('🔍 Environment variables:', {
+      EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com (default)',
+      EMAIL_PORT: process.env.EMAIL_PORT || '587 (default)',
+      EMAIL_USER: process.env.EMAIL_USER ? '***configured***' : '❌ NOT CONFIGURED',
+      EMAIL_PASS: process.env.EMAIL_PASS ? '***configured***' : '❌ NOT CONFIGURED',
+      EMAIL_FROM: process.env.EMAIL_FROM || process.env.EMAIL_USER || '❌ NOT CONFIGURED'
+    });
+    
     const transporter = createTransporter();
     await transporter.verify();
+    console.log('✅ Email configuration verified successfully');
     return { success: true };
   } catch (error) {
-    console.error('Email configuration error:', error);
+    console.error('❌ Email configuration error:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 

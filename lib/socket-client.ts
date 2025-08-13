@@ -7,8 +7,10 @@ export function createSocket() {
       ? window.location.origin
       : (process.env.NEXT_PUBLIC_BASE_URL || "").trim();
 
+  console.log('🔌 Creating socket connection to:', base);
+
   const opts = {
-    transports: ["websocket"], // prefer websocket first
+    transports: ["polling", "websocket"], // match server configuration
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 500,
@@ -18,5 +20,22 @@ export function createSocket() {
     autoConnect: false,
   };
 
-  return io(base, opts);
+  console.log('🔌 Socket options:', opts);
+
+  const socket = io(base, opts);
+  
+  // Add debugging listeners
+  socket.on('connect', () => {
+    console.log('✅ Socket connected successfully:', socket.id);
+  });
+  
+  socket.on('connect_error', (error) => {
+    console.error('❌ Socket connection error:', error);
+  });
+  
+  socket.on('disconnect', (reason) => {
+    console.log('🔌 Socket disconnected:', reason);
+  });
+
+  return socket;
 }

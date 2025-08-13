@@ -62,8 +62,10 @@ app.prepare().then(async () => {
         origin: dev ? true : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
         methods: ['GET', 'POST'],
         credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization'],
       },
       transports: ['polling', 'websocket'], // polling first for stability
+      allowEIO3: true, // Allow Engine.IO v3 clients
     });
 
     // Import and setup socket handlers

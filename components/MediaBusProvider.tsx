@@ -20,23 +20,28 @@ export const MediaBusProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [version, setVersion] = useState(0);
 
   const pickMicTrack = useCallback((): MediaStreamTrack | null => {
-    const anyCall = call as any;
+    try {
+      const anyCall = call as any;
 
-    // 1) Combined local MediaStream (preferred if available)
-    const ms: MediaStream | undefined = anyCall?.state?.mediaStream;
-    const tFromMs = ms?.getAudioTracks?.()[0];
-    if (tFromMs && tFromMs.readyState !== "ended") return tFromMs;
+      // 1) Combined local MediaStream (preferred if available)
+      const ms: MediaStream | undefined = anyCall?.state?.mediaStream;
+      const tFromMs = ms?.getAudioTracks?.()[0];
+      if (tFromMs && tFromMs.readyState !== "ended") return tFromMs;
 
-    // 2) Microphone manager may expose a track directly
-    const tFromMicState: MediaStreamTrack | undefined = anyCall?.microphone?.state?.track;
-    if (tFromMicState && tFromMicState.readyState !== "ended") return tFromMicState;
+      // 2) Microphone manager may expose a track directly
+      const tFromMicState: MediaStreamTrack | undefined = anyCall?.microphone?.state?.track;
+      if (tFromMicState && tFromMicState.readyState !== "ended") return tFromMicState;
 
-    // 3) Or a dedicated MediaStream for the mic
-    const micMs: MediaStream | undefined = anyCall?.microphone?.state?.mediaStream;
-    const tFromMicMs = micMs?.getAudioTracks?.()[0];
-    if (tFromMicMs && tFromMicMs.readyState !== "ended") return tFromMicMs;
+      // 3) Or a dedicated MediaStream for the mic
+      const micMs: MediaStream | undefined = anyCall?.microphone?.state?.mediaStream;
+      const tFromMicMs = micMs?.getAudioTracks?.()[0];
+      if (tFromMicMs && tFromMicMs.readyState !== "ended") return tFromMicMs;
 
-    return null;
+      return null;
+    } catch (error) {
+      console.warn('⚠️ Error picking mic track:', error);
+      return null;
+    }
   }, [call]);
 
   useEffect(() => {

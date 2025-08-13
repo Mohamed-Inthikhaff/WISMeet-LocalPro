@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useCallStateHooks, ParticipantView, useCall } from "@stream-io/video-react-sdk";
 import { Pin, PinOff } from "lucide-react";
 
@@ -80,29 +80,45 @@ export default function ProParticipantsGrid() {
   const participants = useParticipants() as P[];
   const local = useLocalParticipant() as P | null;
 
-  // Stable ordering index assigned once per participant (prevents reordering on DOM changes)
+  // Use refs to store stable data and prevent infinite loops
+  const participantsRef = useRef<P[]>([]);
+  const localRef = useRef<P | null>(null);
   const orderRef = useRef<Map<string, number>>(new Map());
   const nextIndexRef = useRef(0);
+
+  // Update refs when data changes
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants.length]); // Only depend on length
+
+  useEffect(() => {
+    localRef.current = local;
+  }, [local?.userId]); // Only depend on userId
 
   const [pinnedId, setPinnedId] = useState<string | null>(null);
   const onPinToggle = useCallback((id: string) => {
     setPinnedId((prev) => (prev === id ? null : id));
   }, []);
 
+  // Use refs to avoid dependency issues
   const ordered = useMemo(() => {
+    const currentParticipants = participantsRef.current;
+    const currentLocal = localRef.current;
+    
     // Assign stable index if new participant appears
-    for (const p of participants) {
+    for (const p of currentParticipants) {
       const id = getId(p);
       if (id && !orderRef.current.has(id)) {
         orderRef.current.set(id, nextIndexRef.current++);
       }
     }
+    
     // Build a stable-sorted list:
     // 1) pinned first
     // 2) local second
     // 3) others by assigned stable index (join order)
-    const arr = [...participants];
-    const localId = local ? getId(local) : null;
+    const arr = [...currentParticipants];
+    const localId = currentLocal ? getId(currentLocal) : null;
     arr.sort((a, b) => {
       const aid = getId(a);
       const bid = getId(b);
@@ -128,7 +144,7 @@ export default function ProParticipantsGrid() {
     });
 
     return arr;
-  }, [participants, pinnedId, local]);
+  }, [pinnedId]); // Only depend on pinnedId
 
   const count = ordered.length;
   const template =
@@ -144,8 +160,8 @@ export default function ProParticipantsGrid() {
       {ordered.map((p) => {
         const id = getId(p);
         const isLocal =
-          !!local &&
-          id === getId(local);
+          !!localRef.current &&
+          id === getId(localRef.current);
 
         const pinned = pinnedId === id;
 

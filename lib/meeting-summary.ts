@@ -331,16 +331,16 @@ const getFallbackParticipants = (): MeetingSummaryData['participants'] => {
   console.log('🔄 Using fallback participant data');
   return [
     {
-      userId: 'user_123',
+      userId: 'user_30UvuQl3AxXMrVmTMuwXryqb9sO',
+      name: 'Mohamed Inthikhaff | WIS Mortgages',
+      email: 'mohamed.inthikhaff@wismortgages.co.uk',
+      role: 'advisor' as const
+    },
+    {
+      userId: 'user_30UzCEBdvTqa7ehrzBmoft0cLku',
       name: 'Mohamed Inthikhaff',
       email: 'mhdinthikaff@gmail.com',
       role: 'client' as const
-    },
-    {
-      userId: 'user_456',
-      name: 'WIS Mortgages',
-      email: 'mohamed.inthikhaff@wismorgages.co.uk',
-      role: 'advisor' as const
     }
   ];
 };
